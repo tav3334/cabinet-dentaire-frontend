@@ -49,7 +49,7 @@ export default function NewAppointmentPage() {
         </div>
       </div>
 
-      <AppointmentForm onSubmit={handleSubmit} isLoading={createMutation.isPending} />
+      <AppointmentForm onSubmit={handleSubmit} onCancel={() => router.push('/appointments')} isLoading={createMutation.isPending} />
     </div>
   );
 }

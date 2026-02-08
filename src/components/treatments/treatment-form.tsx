@@ -1,6 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { usePatients } from '@/hooks/use-patients';
 import { Treatment, TreatmentFormData, TreatmentCategory, TreatmentStatus } from '@/types';
+import { treatmentSchema } from '@/lib/validations';
 
 const statusOptions: { value: TreatmentStatus; label: string }[] = [
   { value: 'planned', label: 'Planifié' },
@@ -41,10 +43,11 @@ const categoryOptions: { value: TreatmentCategory; label: string }[] = [
 interface TreatmentFormProps {
   treatment?: Treatment;
   onSubmit: (data: TreatmentFormData) => Promise<void>;
+  onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function TreatmentForm({ treatment, onSubmit, isLoading }: TreatmentFormProps) {
+export function TreatmentForm({ treatment, onSubmit, onCancel, isLoading }: TreatmentFormProps) {
   const { data: patientsData, isLoading: patientsLoading } = usePatients({ per_page: 100 });
 
   const {
@@ -54,6 +57,7 @@ export function TreatmentForm({ treatment, onSubmit, isLoading }: TreatmentFormP
     watch,
     formState: { errors },
   } = useForm<TreatmentFormData>({
+    resolver: zodResolver(treatmentSchema),
     defaultValues: {
       patient_id: treatment?.patient_id || 0,
       title: treatment?.title || '',
@@ -114,7 +118,7 @@ export function TreatmentForm({ treatment, onSubmit, isLoading }: TreatmentFormP
             </Label>
             <Input
               id="title"
-              {...register('title', { required: 'Le titre est requis' })}
+              {...register('title')}
               disabled={isLoading}
             />
             {errors.title && (
@@ -286,7 +290,7 @@ export function TreatmentForm({ treatment, onSubmit, isLoading }: TreatmentFormP
 
       {/* Actions */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" disabled={isLoading}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Annuler
         </Button>
         <Button type="submit" disabled={isLoading}>

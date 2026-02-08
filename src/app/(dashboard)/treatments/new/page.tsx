@@ -18,9 +18,8 @@ export default function NewTreatmentPage() {
       await createMutation.mutateAsync(data);
       toast.success('Traitement créé avec succès');
       router.push('/treatments');
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || 'Erreur lors de la création');
+    } catch {
+      // Géré par l'intercepteur Axios
     }
   };
 
@@ -41,7 +40,7 @@ export default function NewTreatmentPage() {
         </div>
       </div>
 
-      <TreatmentForm onSubmit={handleSubmit} isLoading={createMutation.isPending} />
+      <TreatmentForm onSubmit={handleSubmit} onCancel={() => router.push('/treatments')} isLoading={createMutation.isPending} />
     </div>
   );
 }

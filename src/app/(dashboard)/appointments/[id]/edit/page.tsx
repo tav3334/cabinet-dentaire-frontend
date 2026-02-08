@@ -27,9 +27,8 @@ export default function EditAppointmentPage({
       await updateMutation.mutateAsync({ id: appointmentId, data });
       toast.success('Rendez-vous mis à jour');
       router.push(`/appointments/${appointmentId}`);
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || 'Erreur lors de la mise à jour');
+    } catch {
+      // Géré par l'intercepteur Axios
     }
   };
 
@@ -76,6 +75,7 @@ export default function EditAppointmentPage({
       <AppointmentForm
         appointment={appointment}
         onSubmit={handleSubmit}
+        onCancel={() => router.push(`/appointments/${appointmentId}`)}
         isLoading={updateMutation.isPending}
       />
     </div>

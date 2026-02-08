@@ -156,87 +156,162 @@ export default function ConsultationsPage() {
             </div>
           ) : data?.data && data.data.length > 0 ? (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Motif</TableHead>
-                    <TableHead>Diagnostic</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.data.map((consultation) => (
-                    <TableRow key={consultation.id}>
-                      <TableCell>
-                        <div className="font-medium">
-                          {format(new Date(consultation.consultation_date), 'd MMM yyyy', {
-                            locale: fr,
-                          })}
-                        </div>
-                        {consultation.consultation_time && (
-                          <div className="text-sm text-muted-foreground">
-                            {consultation.consultation_time}
+              {/* Desktop Table View */}
+              <div className="hidden lg:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Patient</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Motif</TableHead>
+                      <TableHead>Diagnostic</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.data.map((consultation) => (
+                      <TableRow key={consultation.id}>
+                        <TableCell>
+                          <div className="font-medium">
+                            {format(new Date(consultation.consultation_date), 'd MMM yyyy', {
+                              locale: fr,
+                            })}
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {consultation.patient ? (
+                          {consultation.consultation_time && (
+                            <div className="text-sm text-muted-foreground">
+                              {consultation.consultation_time}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {consultation.patient ? (
+                            <Link
+                              href={`/patients/${consultation.patient.id}`}
+                              className="text-blue-600 hover:underline"
+                            >
+                              {consultation.patient.first_name} {consultation.patient.last_name}
+                            </Link>
+                          ) : (
+                            '-'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <TypeBadge type={consultation.type} />
+                        </TableCell>
+                        <TableCell>
+                          <span className="line-clamp-2 max-w-[200px]">
+                            {consultation.chief_complaint || '-'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="line-clamp-2 max-w-[200px]">
+                            {consultation.diagnosis || '-'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end gap-2">
+                            <Link href={`/consultations/${consultation.id}`}>
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Link href={`/consultations/${consultation.id}/edit`}>
+                              <Button variant="ghost" size="icon">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteConsultation(consultation)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile/Tablet Card View */}
+              <div className="lg:hidden space-y-3 p-4">
+                {data.data.map((consultation) => (
+                  <div
+                    key={consultation.id}
+                    className="p-4 rounded-lg border hover:border-blue-300 hover:bg-blue-50/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold">
+                            {format(new Date(consultation.consultation_date), 'd MMM yyyy', { locale: fr })}
+                          </span>
+                          {consultation.consultation_time && (
+                            <span className="text-sm text-muted-foreground">
+                              {consultation.consultation_time}
+                            </span>
+                          )}
+                        </div>
+                        {consultation.patient && (
                           <Link
                             href={`/patients/${consultation.patient.id}`}
-                            className="text-blue-600 hover:underline"
+                            className="text-blue-600 hover:underline text-sm"
                           >
                             {consultation.patient.first_name} {consultation.patient.last_name}
                           </Link>
-                        ) : (
-                          '-'
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <TypeBadge type={consultation.type} />
-                      </TableCell>
-                      <TableCell>
-                        <span className="line-clamp-2 max-w-[200px]">
-                          {consultation.chief_complaint || '-'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="line-clamp-2 max-w-[200px]">
-                          {consultation.diagnosis || '-'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-2">
-                          <Link href={`/consultations/${consultation.id}`}>
-                            <Button variant="ghost" size="icon">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Link href={`/consultations/${consultation.id}/edit`}>
-                            <Button variant="ghost" size="icon">
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteConsultation(consultation)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
+                      </div>
+                      <TypeBadge type={consultation.type} />
+                    </div>
+
+                    <div className="space-y-2 text-sm mb-3">
+                      {consultation.chief_complaint && (
+                        <div>
+                          <p className="text-muted-foreground text-xs">Motif</p>
+                          <p className="line-clamp-2">{consultation.chief_complaint}</p>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      )}
+                      {consultation.diagnosis && (
+                        <div>
+                          <p className="text-muted-foreground text-xs">Diagnostic</p>
+                          <p className="line-clamp-2">{consultation.diagnosis}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 pt-3 border-t">
+                      <Link href={`/consultations/${consultation.id}`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Eye className="h-4 w-4 mr-1" />
+                          Voir
+                        </Button>
+                      </Link>
+                      <Link href={`/consultations/${consultation.id}/edit`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Pencil className="h-4 w-4 mr-1" />
+                          Modifier
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDeleteConsultation(consultation)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {/* Pagination */}
               {data.meta && data.meta.last_page > 1 && (
-                <div className="flex items-center justify-between px-6 py-4 border-t">
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t gap-4">
+                  <p className="text-sm text-muted-foreground text-center sm:text-left">
                     Affichage de {data.meta.from} à {data.meta.to} sur{' '}
                     {data.meta.total} consultations
                   </p>
@@ -248,15 +323,18 @@ export default function ConsultationsPage() {
                       disabled={page === 1}
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Précédent
+                      <span className="hidden sm:inline ml-1">Précédent</span>
                     </Button>
+                    <span className="text-sm text-muted-foreground flex items-center px-2">
+                      {page} / {data.meta.last_page}
+                    </span>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setPage(page + 1)}
                       disabled={page === data.meta.last_page}
                     >
-                      Suivant
+                      <span className="hidden sm:inline mr-1">Suivant</span>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,21 +16,24 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { Patient, PatientFormData } from '@/types';
+import { patientSchema, PatientFormSchema } from '@/lib/validations';
 
 interface PatientFormProps {
   patient?: Patient;
   onSubmit: (data: PatientFormData) => Promise<void>;
+  onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function PatientForm({ patient, onSubmit, isLoading }: PatientFormProps) {
+export function PatientForm({ patient, onSubmit, onCancel, isLoading }: PatientFormProps) {
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     formState: { errors },
-  } = useForm<PatientFormData>({
+  } = useForm<PatientFormSchema>({
+    resolver: zodResolver(patientSchema),
     defaultValues: {
       first_name: patient?.first_name || '',
       last_name: patient?.last_name || '',
@@ -62,7 +66,7 @@ export function PatientForm({ patient, onSubmit, isLoading }: PatientFormProps) 
             </Label>
             <Input
               id="first_name"
-              {...register('first_name', { required: 'Le prénom est requis' })}
+              {...register('first_name')}
               disabled={isLoading}
             />
             {errors.first_name && (
@@ -76,7 +80,7 @@ export function PatientForm({ patient, onSubmit, isLoading }: PatientFormProps) 
             </Label>
             <Input
               id="last_name"
-              {...register('last_name', { required: 'Le nom est requis' })}
+              {...register('last_name')}
               disabled={isLoading}
             />
             {errors.last_name && (
@@ -127,7 +131,7 @@ export function PatientForm({ patient, onSubmit, isLoading }: PatientFormProps) 
             <Input
               id="phone"
               type="tel"
-              {...register('phone', { required: 'Le téléphone est requis' })}
+              {...register('phone')}
               disabled={isLoading}
             />
             {errors.phone && (
@@ -217,7 +221,7 @@ export function PatientForm({ patient, onSubmit, isLoading }: PatientFormProps) 
 
       {/* Actions */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" disabled={isLoading}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Annuler
         </Button>
         <Button type="submit" disabled={isLoading}>

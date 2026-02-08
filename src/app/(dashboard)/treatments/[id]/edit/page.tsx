@@ -27,9 +27,8 @@ export default function EditTreatmentPage({
       await updateMutation.mutateAsync({ id: treatmentId, data });
       toast.success('Traitement mis à jour');
       router.push(`/treatments/${treatmentId}`);
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || 'Erreur lors de la mise à jour');
+    } catch {
+      // Géré par l'intercepteur Axios
     }
   };
 
@@ -74,6 +73,7 @@ export default function EditTreatmentPage({
       <TreatmentForm
         treatment={treatment}
         onSubmit={handleSubmit}
+        onCancel={() => router.push(`/treatments/${treatmentId}`)}
         isLoading={updateMutation.isPending}
       />
     </div>

@@ -18,9 +18,8 @@ export default function NewConsultationPage() {
       await createMutation.mutateAsync(data);
       toast.success('Consultation créée avec succès');
       router.push('/consultations');
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || 'Erreur lors de la création');
+    } catch {
+      // Géré par l'intercepteur Axios
     }
   };
 
@@ -41,7 +40,7 @@ export default function NewConsultationPage() {
         </div>
       </div>
 
-      <ConsultationForm onSubmit={handleSubmit} isLoading={createMutation.isPending} />
+      <ConsultationForm onSubmit={handleSubmit} onCancel={() => router.push('/consultations')} isLoading={createMutation.isPending} />
     </div>
   );
 }

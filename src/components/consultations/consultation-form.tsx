@@ -1,6 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { usePatients } from '@/hooks/use-patients';
 import { Consultation, ConsultationFormData, ConsultationType } from '@/types';
+import { consultationSchema } from '@/lib/validations';
 
 const typeOptions: { value: ConsultationType; label: string }[] = [
   { value: 'first_visit', label: 'Première visite' },
@@ -28,10 +30,11 @@ const typeOptions: { value: ConsultationType; label: string }[] = [
 interface ConsultationFormProps {
   consultation?: Consultation;
   onSubmit: (data: ConsultationFormData) => Promise<void>;
+  onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function ConsultationForm({ consultation, onSubmit, isLoading }: ConsultationFormProps) {
+export function ConsultationForm({ consultation, onSubmit, onCancel, isLoading }: ConsultationFormProps) {
   const { data: patientsData, isLoading: patientsLoading } = usePatients({ per_page: 100 });
 
   const {
@@ -41,6 +44,7 @@ export function ConsultationForm({ consultation, onSubmit, isLoading }: Consulta
     watch,
     formState: { errors },
   } = useForm<ConsultationFormData>({
+    resolver: zodResolver(consultationSchema),
     defaultValues: {
       patient_id: consultation?.patient_id || 0,
       consultation_date: consultation?.consultation_date?.split('T')[0] || new Date().toISOString().split('T')[0],
@@ -124,7 +128,7 @@ export function ConsultationForm({ consultation, onSubmit, isLoading }: Consulta
             <Input
               id="consultation_date"
               type="date"
-              {...register('consultation_date', { required: 'La date est requise' })}
+              {...register('consultation_date')}
               disabled={isLoading}
             />
             {errors.consultation_date && (
@@ -287,7 +291,7 @@ export function ConsultationForm({ consultation, onSubmit, isLoading }: Consulta
 
       {/* Actions */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" disabled={isLoading}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Annuler
         </Button>
         <Button type="submit" disabled={isLoading}>

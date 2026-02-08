@@ -18,9 +18,8 @@ export default function NewPatientPage() {
       await createMutation.mutateAsync(data);
       toast.success('Patient créé avec succès');
       router.push('/patients');
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || 'Erreur lors de la création');
+    } catch {
+      // Géré par l'intercepteur Axios
     }
   };
 
@@ -41,7 +40,7 @@ export default function NewPatientPage() {
         </div>
       </div>
 
-      <PatientForm onSubmit={handleSubmit} isLoading={createMutation.isPending} />
+      <PatientForm onSubmit={handleSubmit} onCancel={() => router.push('/patients')} isLoading={createMutation.isPending} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,14 +18,16 @@ import { Loader2 } from 'lucide-react';
 import { usePatients } from '@/hooks/use-patients';
 import { useServices } from '@/hooks/use-services';
 import { Appointment, AppointmentFormData } from '@/types';
+import { appointmentSchema } from '@/lib/validations';
 
 interface AppointmentFormProps {
   appointment?: Appointment;
   onSubmit: (data: AppointmentFormData) => Promise<void>;
+  onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function AppointmentForm({ appointment, onSubmit, isLoading }: AppointmentFormProps) {
+export function AppointmentForm({ appointment, onSubmit, onCancel, isLoading }: AppointmentFormProps) {
   const { data: patientsData, isLoading: patientsLoading } = usePatients({ per_page: 100 });
   const { data: servicesData, isLoading: servicesLoading } = useServices();
 
@@ -35,6 +38,7 @@ export function AppointmentForm({ appointment, onSubmit, isLoading }: Appointmen
     watch,
     formState: { errors },
   } = useForm<AppointmentFormData>({
+    resolver: zodResolver(appointmentSchema),
     defaultValues: {
       patient_id: appointment?.patient_id || undefined,
       service_id: appointment?.service_id || undefined,
@@ -100,9 +104,7 @@ export function AppointmentForm({ appointment, onSubmit, isLoading }: Appointmen
                 </Label>
                 <Input
                   id="name"
-                  {...register('name', {
-                    required: !patientId ? 'Le nom est requis' : false,
-                  })}
+                  {...register('name')}
                   disabled={isLoading}
                 />
                 {errors.name && (
@@ -117,9 +119,7 @@ export function AppointmentForm({ appointment, onSubmit, isLoading }: Appointmen
                 <Input
                   id="phone"
                   type="tel"
-                  {...register('phone', {
-                    required: !patientId ? 'Le téléphone est requis' : false,
-                  })}
+                  {...register('phone')}
                   disabled={isLoading}
                 />
                 {errors.phone && (
@@ -190,9 +190,7 @@ export function AppointmentForm({ appointment, onSubmit, isLoading }: Appointmen
             <Input
               id="appointment_date"
               type="date"
-              {...register('appointment_date', {
-                required: 'La date est requise',
-              })}
+              {...register('appointment_date')}
               disabled={isLoading}
             />
             {errors.appointment_date && (
@@ -209,9 +207,7 @@ export function AppointmentForm({ appointment, onSubmit, isLoading }: Appointmen
             <Input
               id="appointment_time"
               type="time"
-              {...register('appointment_time', {
-                required: "L'heure est requise",
-              })}
+              {...register('appointment_time')}
               disabled={isLoading}
             />
             {errors.appointment_time && (
@@ -248,7 +244,7 @@ export function AppointmentForm({ appointment, onSubmit, isLoading }: Appointmen
 
       {/* Actions */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" disabled={isLoading}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Annuler
         </Button>
         <Button type="submit" disabled={isLoading}>

@@ -42,8 +42,6 @@ import {
   ChevronRight,
   ClipboardList,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { Treatment, TreatmentStatus, TreatmentCategory } from '@/types';
 
@@ -193,113 +191,200 @@ export default function TreatmentsPage() {
             </div>
           ) : data?.data && data.data.length > 0 ? (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Traitement</TableHead>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Catégorie</TableHead>
-                    <TableHead>Progression</TableHead>
-                    <TableHead>Coût</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.data.map((treatment) => (
-                    <TableRow key={treatment.id}>
-                      <TableCell>
-                        <div className="font-medium">{treatment.title}</div>
-                        {treatment.tooth_number && (
-                          <div className="text-sm text-muted-foreground">
-                            Dent: {treatment.tooth_number}
+              {/* Desktop Table View */}
+              <div className="hidden lg:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Traitement</TableHead>
+                      <TableHead>Patient</TableHead>
+                      <TableHead>Catégorie</TableHead>
+                      <TableHead>Progression</TableHead>
+                      <TableHead>Coût</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.data.map((treatment) => (
+                      <TableRow key={treatment.id}>
+                        <TableCell>
+                          <div className="font-medium">{treatment.title}</div>
+                          {treatment.tooth_number && (
+                            <div className="text-sm text-muted-foreground">
+                              Dent: {treatment.tooth_number}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {treatment.patient ? (
+                            <Link
+                              href={`/patients/${treatment.patient.id}`}
+                              className="text-blue-600 hover:underline"
+                            >
+                              {treatment.patient.first_name} {treatment.patient.last_name}
+                            </Link>
+                          ) : (
+                            '-'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {categoryOptions.find((c) => c.value === treatment.category)?.label ||
+                              treatment.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {treatment.sessions_required ? (
+                            <div className="space-y-1">
+                              <Progress
+                                value={treatment.progress_percentage || 0}
+                                className="h-2"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                {treatment.sessions_completed || 0} / {treatment.sessions_required}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {treatment.estimated_cost ? (
+                            <div>
+                              <p className="font-medium">
+                                {treatment.actual_cost
+                                  ? `${treatment.actual_cost} €`
+                                  : `~${treatment.estimated_cost} €`}
+                              </p>
+                              {treatment.actual_cost && treatment.estimated_cost && (
+                                <p className="text-xs text-muted-foreground">
+                                  Est: {treatment.estimated_cost} €
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={treatment.status} />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end gap-2">
+                            <Link href={`/treatments/${treatment.id}`}>
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Link href={`/treatments/${treatment.id}/edit`}>
+                              <Button variant="ghost" size="icon">
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteTreatment(treatment)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
                           </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile/Tablet Card View */}
+              <div className="lg:hidden space-y-3 p-4">
+                {data.data.map((treatment) => (
+                  <div
+                    key={treatment.id}
+                    className="p-4 rounded-lg border hover:border-blue-300 hover:bg-blue-50/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <Link href={`/treatments/${treatment.id}`}>
+                          <p className="font-semibold text-gray-900 hover:text-blue-600">
+                            {treatment.title}
+                          </p>
+                        </Link>
+                        {treatment.tooth_number && (
+                          <p className="text-sm text-muted-foreground">Dent: {treatment.tooth_number}</p>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        {treatment.patient ? (
+                      </div>
+                      <StatusBadge status={treatment.status} />
+                    </div>
+
+                    <div className="space-y-2 text-sm mb-3">
+                      {treatment.patient && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Patient</span>
                           <Link
                             href={`/patients/${treatment.patient.id}`}
                             className="text-blue-600 hover:underline"
                           >
                             {treatment.patient.first_name} {treatment.patient.last_name}
                           </Link>
-                        ) : (
-                          '-'
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {categoryOptions.find((c) => c.value === treatment.category)?.label ||
-                            treatment.category}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {treatment.sessions_required ? (
-                          <div className="space-y-1">
-                            <Progress
-                              value={treatment.progress_percentage || 0}
-                              className="h-2"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              {treatment.sessions_completed || 0} / {treatment.sessions_required}
-                            </p>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {treatment.estimated_cost ? (
-                          <div>
-                            <p className="font-medium">
-                              {treatment.actual_cost
-                                ? `${treatment.actual_cost} €`
-                                : `~${treatment.estimated_cost} €`}
-                            </p>
-                            {treatment.actual_cost && treatment.estimated_cost && (
-                              <p className="text-xs text-muted-foreground">
-                                Est: {treatment.estimated_cost} €
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={treatment.status} />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-2">
-                          <Link href={`/treatments/${treatment.id}`}>
-                            <Button variant="ghost" size="icon">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Link href={`/treatments/${treatment.id}/edit`}>
-                            <Button variant="ghost" size="icon">
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteTreatment(treatment)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Catégorie</span>
+                        <Badge variant="outline">
+                          {categoryOptions.find((c) => c.value === treatment.category)?.label || treatment.category}
+                        </Badge>
+                      </div>
+                      {treatment.sessions_required && (
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-muted-foreground">Progression</span>
+                            <span>{treatment.sessions_completed || 0} / {treatment.sessions_required}</span>
+                          </div>
+                          <Progress value={treatment.progress_percentage || 0} className="h-2" />
+                        </div>
+                      )}
+                      {treatment.estimated_cost && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Coût</span>
+                          <span className="font-medium">
+                            {treatment.actual_cost ? `${treatment.actual_cost} €` : `~${treatment.estimated_cost} €`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 pt-3 border-t">
+                      <Link href={`/treatments/${treatment.id}`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Eye className="h-4 w-4 mr-1" />
+                          Voir
+                        </Button>
+                      </Link>
+                      <Link href={`/treatments/${treatment.id}/edit`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">
+                          <Pencil className="h-4 w-4 mr-1" />
+                          Modifier
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDeleteTreatment(treatment)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {/* Pagination */}
               {data.meta && data.meta.last_page > 1 && (
-                <div className="flex items-center justify-between px-6 py-4 border-t">
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t gap-4">
+                  <p className="text-sm text-muted-foreground text-center sm:text-left">
                     Affichage de {data.meta.from} à {data.meta.to} sur{' '}
                     {data.meta.total} traitements
                   </p>
@@ -311,15 +396,18 @@ export default function TreatmentsPage() {
                       disabled={page === 1}
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Précédent
+                      <span className="hidden sm:inline ml-1">Précédent</span>
                     </Button>
+                    <span className="text-sm text-muted-foreground flex items-center px-2">
+                      {page} / {data.meta.last_page}
+                    </span>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setPage(page + 1)}
                       disabled={page === data.meta.last_page}
                     >
-                      Suivant
+                      <span className="hidden sm:inline mr-1">Suivant</span>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>

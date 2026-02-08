@@ -23,9 +23,8 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
       await updateMutation.mutateAsync({ id: patientId, data });
       toast.success('Patient mis à jour avec succès');
       router.push(`/patients/${patientId}`);
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || 'Erreur lors de la mise à jour');
+    } catch {
+      // Géré par l'intercepteur Axios
     }
   };
 
@@ -72,6 +71,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
       <PatientForm
         patient={patient}
         onSubmit={handleSubmit}
+        onCancel={() => router.push(`/patients/${patientId}`)}
         isLoading={updateMutation.isPending}
       />
     </div>

@@ -27,9 +27,8 @@ export default function EditConsultationPage({
       await updateMutation.mutateAsync({ id: consultationId, data });
       toast.success('Consultation mise à jour');
       router.push(`/consultations/${consultationId}`);
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message || 'Erreur lors de la mise à jour');
+    } catch {
+      // Géré par l'intercepteur Axios
     }
   };
 
@@ -76,6 +75,7 @@ export default function EditConsultationPage({
       <ConsultationForm
         consultation={consultation}
         onSubmit={handleSubmit}
+        onCancel={() => router.push(`/consultations/${consultationId}`)}
         isLoading={updateMutation.isPending}
       />
     </div>
